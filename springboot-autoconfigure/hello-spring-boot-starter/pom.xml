@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>springboot-autoconfigure</artifactId>
+        <groupId>top.kwseeker</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>hello-spring-boot-starter</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <!--引入组件jar包-->
+        <!-- ... -->
+
+        <dependency>
+            <groupId>top.kwseeker</groupId>
+            <artifactId>hello-spring-boot-autoconfigure</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>/Users/lee/.m2/repository/top/kwseeker/hello-spring-boot-autoconfigure/0.0.1-SNAPSHOT/hello-spring-boot-autoconfigure-0.0.1-SNAPSHOT.jar</systemPath>-->
+        </dependency>
+    </dependencies>
+
+    <!--<dependencyManagement>-->
+        <!--<dependencies>-->
+            <!--<dependency>-->
+                <!--<groupId>org.springframework.boot</groupId>-->
+                <!--<artifactId>spring-boot-dependencies</artifactId>-->
+                <!--<version>2.1.6.RELEASE</version>-->
+                <!--<type>pom</type>-->
+                <!--<scope>import</scope>-->
+            <!--</dependency>-->
+        <!--</dependencies>-->
+    <!--</dependencyManagement>-->
+</project>
