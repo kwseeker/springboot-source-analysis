@@ -7,10 +7,11 @@
         <module>springboot-autoconfigure</module>
         <module>spring-ioc</module>
         <module>spring-javaconfig</module>
-        <module>spring-listener</module>
+        <module>spring-event</module>
         <module>spring-factoriesLoader</module>
         <module>spring-dependencyInjectionAndLookup</module>
         <module>spring-java</module>
+        <module>my-spring-ioc</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

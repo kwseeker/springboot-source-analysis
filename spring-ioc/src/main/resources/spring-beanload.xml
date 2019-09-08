@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--
+    <bean class=""
+          name=""
+          scope=""                      默认是单例
+          parent=""
+          id=""
+          abstract=""
+          autowire=""
+          autowire-candidate=""
+          depends-on=""
+          destroy-method=""
+          factory-bean=""
+          factory-method=""
+          init-method=""
+          lazy-init=""
+          primary="">
+        <property name="fieldName" value="fieldValue"/>
+        <lookup-method/>
+        <qualifier value="aliasName"/>
+        <meta key="" value=""/>
+        <replaced-method/>
+        <description></description>
+        <constructor-arg name="" value="" ref="" index="" type="" />
+    </bean> -->
+
+    <!--<bean name="Arvin" class="top.kwseeker.spring.ioc.beanLoad.xml.User" scope="singleton"/>-->
+    <bean name="Arvin" class="top.kwseeker.spring.ioc.beanLoad.xml.User" scope="prototype"/>
+    <bean name="Bob" class="top.kwseeker.spring.ioc.beanLoad.xml.User">
+        <constructor-arg value="Bob"/>
+    </bean>
+    <bean name="Cindy" class="top.kwseeker.spring.ioc.beanLoad.xml.User">
+        <property name="name" value="Cindy"/>   <!--通过setter方法装载成员属性-->
+    </bean>
+
+</beans>
