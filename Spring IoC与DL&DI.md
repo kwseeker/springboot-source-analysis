@@ -34,7 +34,7 @@ Web应用项目对象依赖一般都相当地复杂，每次都重新创建对�
 
 + **1）首先第一步：在配置文件中定义Bean**
 
-  具体应该怎么定义才能创建处一个Bean（想想构造器）。首先要有**类信息**，然后需要指定**初始化参**数，万一成员也是个Bean，还要把**依赖的Bean**先创建出来，并传到这个Bean定义。有时还会碰到重重依赖或者循环依赖。有时面对某些场景需要创建多个Bean实例。
+  具体应该怎么定义才能创建出一个Bean（想想构造器）。首先要有**类信息**，然后需要指定**初始化参**数，万一成员也是个Bean，还要把**依赖的Bean**先创建出来，并传到这个Bean定义。有时还会碰到重重依赖或者循环依赖。有时面对某些场景需要创建多个Bean实例。
 
   ```
   //比如我们实现了两个Bean Class
@@ -168,7 +168,21 @@ Web应用项目对象依赖一般都相当地复杂，每次都重新创建对�
 
   
 
-最终实现流程：
+**最终实现流程**：
+
+```txt
+1) 获取BeanDefinition；
+	1.1）从XML定义获取
+		要想让spring帮忙创建bean，必须在xml中告知对方，我们需要的Bean的class全路径（用于使用反射创建Bean实例），Bean的名称（因为创建的Bean最终是要放到Map集合的要用这个名称提取Bean对象）；
+		然后可能还需要定义初始化方式（构造器、setter方法），bean的作用区间，别名，懒加载属性，依赖注入等。
+		1.1.1）Xml文件读取与解析
+	1.2）从注解中读取（TODO）
+	
+2）解析BeanDefinition创建Bean并存储到Map集合；
+
+3）通过Bean的名字查找Map集合获取Bean对象。
+
+```
 
 
 
@@ -176,13 +190,13 @@ Web应用项目对象依赖一般都相当地复杂，每次都重新创建对�
 
 分为基础容器`BeanFactory`和高级容器`ApplicationContext`，它们都是接口; `BeanFactory`是顶级接口，`ApplicationContext`是其子接口。
 
- #### Bean的装载流程
+### Bean的装载流程
 
 借张图
 
 ![IoC Bean装配原理](images/IoC Bean装配原理.png)
 
-#### Bean的装载方式
+####1 Bean的装载方式
 
 除了`FactoryBean`,其他六种方式殊途同归，都有同一个目的即获取`BeanDefinition`。
 
@@ -193,6 +207,8 @@ Web应用项目对象依赖一般都相当地复杂，每次都重新创建对�
 + **XML**
 
   基于 `ClassPathXmlApplicationContext`容器。
+
+  其余注解方式基于`AnnotationConfigApplicationContext`容器。
 
 + **实现FactoryBean**
 
@@ -286,16 +302,114 @@ Web应用项目对象依赖一般都相当地复杂，每次都重新创建对�
   }
   ```
 
-  
-
 + **@ImportResource**
+
+  装载在XML中定义的Bean
 
 + **@Conditional**
 
-  
+  条件装载，条件类实现`org.springframework.context.annotation.Condition`接口，当matches()返回true，才进行Bean的装载。
+
+#### 2 Bean的注册原理
+
++ **ClassPathXmlApplicationContext**
+
+  xml装载方式以及xml和注解组合装载方式使用这种。
+
+  ```java
+  ClassPathXmlApplicationContext#ClassPathXmlApplicationContext()
+  //定位配置文件的位置
+  //启动IoC容器
+  	AbstractApplicationContext#refresh()
+  	//刷新Bean工厂
+  		AbstractApplicationContext#obtainFreshBeanFactory()
+  		//如果BeanFactory已经存在则关闭
+  		//创建 DefaultListableBeanFactory，既是BeanFactory又是一个注册器
+  		//BeanFactory定制化：是否允许BeanDefinition覆盖、是否允许循环依赖
+  		//加载BeanDefinition
+  			AbstractXmlApplicationContext#loadBeanDefinitions()
+  			//创建 XmlBeanDefinitionReader
+      		//如果配置资源为null，则获取配置文件路径（可以有多个配置资源文件，spring会遍历依次加载），然后使用ResourcePatternResolver获取配置资源
+  			//执行真正的加载BeanDefinition逻辑
+  				XmlBeanDefinitionReader#doLoadBeanDefinitions()
+  				//解析XML文件获取Document对象（？）
+      			//获取BeanDefinition注册器
+      			//创建BeanDefinitionDocumentReader，使用它注册BeanDefinition
+  					DefaultBeanDefinitionDocumentReader#doRegisterBeanDefinitions(Element root)
+      				//创建BeanDefinitionParserDelegate
+      				//预处理xml
+      				//解析BeanDefintion（依次解析处理每个节点）
+      					DefaultBeanDefinitionDocumentReader#parseDefaultElement()
+      					//区分import、alias、bean、beans分别处理
+      					//bean的处理方式
+      						//解析Document节点获取BeanDefinition并包装成BeanDefinitionHolder（除了BeanDefinition属性还有beanName和aliasesArray别名数组）
+      						//交给BeanDefinitionReaderUtil处理（拿到Bean的name，注册器：DefaultListableBeanFactory, 使用注册器注册）
+      							DefaultListableBeanFactory#registerBeanDefinition()
+      								//在 beanDefinitionMap 添加此bean的 name-beanDefinition 的键值对
+      								
+      				//后置处理xml
+  	//... 后面的流程就是Bean的获取流程了
+  ```
+
++ **AnnotationConfigApplicationContext**
+
+  使用注解的Bean装配方式使用这种。
+
+  ```java
+  AnnotationConfigApplicationContext#AnnotationConfigApplicationContext()
+  //this() 执行父类的构造器和此类的构造器
+      GenericApplicationContext#GenericApplicationContext()
+      //父类的构造器创建DefaultListableBeanFactory实例 this.beanFactory = new DefaultListableBeanFactory();
+      AnnotatedBeanDefinitionReader#AnnotatedBeanDefinitionReader()
+      //创建注解形式的BeanDefinition读取器，用于解析并注册BeanDefinition和DefaultBeanDefinitionDocumentReader功能是一样的；
+     	//注意这里会默认先注册进去几个Spring的基础Bean
+      	AnnotationConfigUtils#registerAnnotationConfigProcessors()
+      	//注册 ConfigurationClassPostProcessor
+      	//注册 AutowiredAnnotationBeanPostProcessor
+      	//注册 CommonAnnotationBeanPostProcessor
+      	//注册 EventListenerMethodProcessor
+      	//注册 DefaultEventListenerFactory
+      ClassPathBeanDefinitionScanner#ClassPathBeanDefinitionScanner()
+      //创建Bean定义扫描器
+  //注册ApplicationContext传入的配置类（Demo中为AppConfig），作为一个Bean。支持传入多个配置类。
+      AnnotationBeanDefinitionReader#doRegisterBean()
+      //TODO
+  //刷新Bean工厂
+      AbstractApplicationContext#obtainFreshBeanFactory()
+      //验证BeanFactory是否刷新，然后直接返回 DefaultListableBeanFactory
+  	AbstractApplicationContext#prepareBeanFactory()
+      	//准备bean工厂： 指定beanFactory的类加载器， 添加后置处理器，注册缺省环境bean等
+  		// beanFactory添加了2个后置处理器 ApplicationContextAwareProcessor, ApplicationListenerDetector (new)
+      
+  ```
+
+
+
+#### 3 Bean的获取
+
+​	前面说的几种Bean装配方式只是在BeanDefinition注册的时期处理不同，在获取Bean的时期是一样的。
+
+​	Bean的创建流程源码入口：
+
+​	BeanFactory的getBean()方法。
+
+#### 遗留问题
+
++ **Autowire 5种模式及原理**
+
+  ```
+  AUTOWIRE_NO 默认的方式是不进行自动装配，通过手工设置ref 属性来进行装配bean
+  AUTOWIRE_BY_NAME 通过参数名 自动装配，如果一个bean的property和另一个bean的name相同，就自动装配
+  AUTOWIRE_BY_TYPE 通过参数的数据类型自动自动装配，如果一个bean的数据类型和另外一个bean的property属性的数据类型兼容，就自动装配
+  AUTOWIRE_CONSTRUCTOR 构造方法中的参数通过byType的形式，自动装配
+  AUTOWIRE_AUTODETECT 如果有默认的构造方法，通过 construct的方式自动装配，否则使用 byType的方式自动装配。已经废弃
+  ```
+
+  `AUTOWIRE_BY_NAME` 和 `AUTOWIRE_BY_TYPE`，默认是使用无参构造方法实例化，通过setter方法装配的？
+
+  `AUTOWIRE_AUTODETECT` 使用参数个数最多的构造方法实例化并赋值。
 
   
-
 
 ## Bean的依赖注入
 

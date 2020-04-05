@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean name="userDao" class="top.kwseeker.spring.ioc.beanLoad.autowireMode.UserDao" />
+
+    <bean name="userService" class="top.kwseeker.spring.ioc.beanLoad.autowireMode.UserService" autowire="byType"/>
+    <!--<bean name="userService" class="top.kwseeker.spring.ioc.beanLoad.autowireMode.UserService" autowire="byName"/>-->
+    <!--<bean name="userService" class="top.kwseeker.spring.ioc.beanLoad.autowireMode.UserService" autowire="constructor"/>-->
+
+</beans>

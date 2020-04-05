@@ -12,6 +12,7 @@
         <module>spring-dependencyInjectionAndLookup</module>
         <module>spring-java</module>
         <module>my-spring-ioc</module>
+        <module>spring-aop</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

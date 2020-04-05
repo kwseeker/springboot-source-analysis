@@ -33,6 +33,14 @@
     <bean name="Bob" class="top.kwseeker.spring.ioc.beanLoad.xml.User">
         <constructor-arg value="Bob"/>
     </bean>
+    <bean name="David" class="top.kwseeker.spring.ioc.beanLoad.xml.User">
+        <!--通过构造方法装载成员属性-->
+        <!--<constructor-arg name="name" value="David"/>-->
+        <!--<constructor-arg name="age" value="25"/>-->
+        <!--另一种写法-->
+        <constructor-arg index="0" value="David"/>
+        <constructor-arg index="1" value="25"/>
+    </bean>
     <bean name="Cindy" class="top.kwseeker.spring.ioc.beanLoad.xml.User">
         <property name="name" value="Cindy"/>   <!--通过setter方法装载成员属性-->
     </bean>

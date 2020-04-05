@@ -2,7 +2,6 @@
 
 参考资料：
 《Spring源码深度解读》第2、3、4、5、6章
-《沽泡学院 Spring 源码分析》 第2章
 
 Spring IoC的目的：对象的创建、存储及统一管理。
 
@@ -45,7 +44,8 @@ Bean存在依赖关系， Bean存在不同的作用域，如何管理Bean的创�
 + 消息资源处理？
 + 事件发布
 + 应用层上下文
-    
+  
+
 1.2. Container Overview
 
 + 配置元数据
@@ -54,7 +54,8 @@ Bean存在依赖关系， Bean存在不同的作用域，如何管理Bean的创�
     - 基于XML的配置
 + 实例化容器
 + 使用容器
-    
+  
+
 1.3. Bean Overview
 
 + Bean属性定义
@@ -77,6 +78,7 @@ Bean存在依赖关系， Bean存在不同的作用域，如何管理Bean的创�
 + 实例化Beans  
     使用构造方法，使用工厂方法
     
+
 1.4. Dependencies
 + 依赖注入
 
@@ -151,6 +153,7 @@ Bean存在依赖关系， Bean存在不同的作用域，如何管理Bean的创�
     protected abstract Command createCommand(); //Command是依赖的Bean的类型
     ```
     
+
 1.5. Bean Scopes
     
 + singleton（容器内唯一，不过一个应用中一般只有一个容器吧，所以一般和application是差不多的）  
@@ -159,7 +162,8 @@ Bean存在依赖关系， Bean存在不同的作用域，如何管理Bean的创�
 + session
 + application
 + websocket
-    
+  
+
 1.6. Customizing the Nature of a Bean（自定义Bean的特性）
 
 + 生命周期回调
@@ -174,6 +178,7 @@ Bean存在依赖关系， Bean存在不同的作用域，如何管理Bean的创�
 
 + 其他Aware接口
         
+
 1.7. Bean Definition Inheritance
 
 Bean 定义继承: bean 的 parent 属性。
@@ -249,8 +254,8 @@ Spring IoC xml配置方式在Spring Boot中已经很少使用了，主要梳理�
 
     + BeanDefinition (I)
             
-        
-            
+      
+      
         - RootBeanDefinition (C)
 
 4. Bean实例化与获取
@@ -278,7 +283,7 @@ IoC容器既是Bean定义reader、工厂又是容器。
     - ClasspathXmlApplicationContext (C)
 
     - FileSystemXmlApplicationContext (C)
-   
+
 
 #### 注解方式的Bean自动装配的实现
 
@@ -349,5 +354,5 @@ IoC容器既是Bean定义reader、工厂又是容器。
     run:1213, SpringApplication (org.springframework.boot)
     run:1202, SpringApplication (org.springframework.boot)
     main:10, WechatPublicAccountApplication (top.kwseeker.wechat.publicaccount.wechatpublicaccount)
-    ``` 
+    ```
 
