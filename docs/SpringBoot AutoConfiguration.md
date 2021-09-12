@@ -49,7 +49,7 @@ Mybatis Starter 是一个标准的案例。
     不过看资料得知：这个文件的内容是编译器通过处理所有被@ConfigurationProperties注解的节点生成的，
     就是说这个json文件每个节点对应一个属性；
     查看了下Mybatis的 spring-configuration-metadata.json 和 MybatisProperties 配置项都是对应起来的：
-    ```
+    ```java
     // META-INF/spring-configuration-metadata.json
     {
       "sourceType": "org.mybatis.spring.boot.autoconfigure.MybatisProperties",

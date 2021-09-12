@@ -378,7 +378,7 @@ main:10, SimpleAppApplication (top.kwseeker.simpleapp)
     
         "org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext";
 
-        ![](images/Spring%20Boot%20应用上下文.png)
+        ![](../images/Spring%20Boot%20应用上下文.png)
 
     2) 两个重要成员
     

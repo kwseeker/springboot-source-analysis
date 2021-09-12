@@ -240,7 +240,7 @@ Spring IoC xml配置方式在Spring Boot中已经很少使用了，主要梳理�
     
 3. Bean定义解析
 
-    ![](./images/IoC%20Bean定义.png)
+    ![](../images/IoC%20Bean定义.png)
 
     + BeanDefinitionReader (I)
     

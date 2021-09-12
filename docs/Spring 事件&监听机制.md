@@ -75,7 +75,7 @@ Spring Boot 官方定义了7种ApplicationEvent事件；
 
 Spring Boot 事件发布者是 ApplicationEventMulticaster 接口的实现类（SimpleApplicationEventMulticaster 是框架唯一实现）。
 
-![](images/SpringBoot事件.png)
+![](../images/SpringBoot事件.png)
 
 SpringApplicationEvent 有7个实现类。
 

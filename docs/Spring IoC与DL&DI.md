@@ -194,7 +194,7 @@ Web应用项目对象依赖一般都相当地复杂，每次都重新创建对�
 
 借张图
 
-![IoC Bean装配原理](images/IoC Bean装配原理.png)
+![IoC Bean装配原理](../images/IoC%20Bean装配原理.png)
 
 ####1 Bean的装载方式
 

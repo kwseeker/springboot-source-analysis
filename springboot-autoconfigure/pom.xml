@@ -16,7 +16,6 @@
         <module>hello-spring-boot-starter</module>
         <module>hello-starter-sample-app</module>
         <module>hello-service</module>
+        <module>conditional-demo</module>
     </modules>
-
-
 </project>

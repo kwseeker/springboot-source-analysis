@@ -2,7 +2,7 @@
 
 组件依赖
 
-![Spring组件依赖图](./images/Spring各组件依赖关系图.png)
+![Spring组件依赖图](../images/Spring各组件依赖关系图.png)
 
 每个组件都是一个完整的模块。
 
