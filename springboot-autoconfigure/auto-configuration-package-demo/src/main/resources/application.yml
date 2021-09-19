@@ -1,0 +1,12 @@
+management:
+  # /actuator/beans
+  endpoints:
+    web:
+      exposure:
+        # 开启所有endpoints(不包含shutdown)
+        exclude: mappings
+        include: '*'
+  endpoint:
+    shutdown:
+      # 开启/actuator/shutdown
+      enabled: true

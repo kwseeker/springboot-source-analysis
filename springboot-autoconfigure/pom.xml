@@ -17,5 +17,7 @@
         <module>hello-starter-sample-app</module>
         <module>hello-service</module>
         <module>conditional-demo</module>
+        <module>auto-configuration-package-demo</module>
+        <module>auto-configuration-package-m1</module>
     </modules>
 </project>
