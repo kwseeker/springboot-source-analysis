@@ -10,3 +10,6 @@ management:
     shutdown:
       # 开启/actuator/shutdown
       enabled: true
+
+debug:
+  true

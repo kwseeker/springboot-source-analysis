@@ -6,7 +6,7 @@
     <modules>
         <module>springboot-autoconfigure</module>
         <module>spring-ioc</module>
-        <module>spring-event</module>
+        <!--<module>spring-event</module>-->
         <module>spring-factoriesLoader</module>
         <module>spring-dependencyInjectionAndLookup</module>
         <module>spring-java</module>
@@ -15,7 +15,8 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.6.RELEASE</version>
+        <!--<version>2.1.6.RELEASE</version>-->
+        <version>2.3.6.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>top.kwseeker</groupId>
@@ -33,13 +34,13 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter</artifactId>
-                <version>2.1.6.RELEASE</version>
+                <version>2.3.6.RELEASE</version>
             </dependency>
 
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-test</artifactId>
-                <version>2.1.6.RELEASE</version>
+                <version>2.3.6.RELEASE</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

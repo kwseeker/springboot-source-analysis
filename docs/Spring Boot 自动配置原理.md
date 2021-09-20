@@ -1,6 +1,16 @@
 # Spring Boot 自动配置原理
 
+目标：
 
++ 理解Spring IOC 到 Spring Boot 自动配置原理
+
++ DeferredImportSelector 处理流程，Bean加载顺序排序规则
+
++ 定制拓展自动配置类
+
++ 自定义Starter实现自动配置
+
+  
 
 ## 1 从@EnableAutoConfiguration看自动配置原理
 
@@ -12,6 +22,8 @@
         	@Import(AutoConfigurationImportSelector.class)
         	-> 
 ```
+
+
 
 ### 1.1 AutoConfigurationPackages.Registrar
 
@@ -53,15 +65,23 @@ public static void register(BeanDefinitionRegistry registry, String... packageNa
 代码的意思是注册一个名为  `org.springframework.boot.autoconfigure.AutoConfigurationPackages`类型为 `AutoConfigurationPackages.BasePackages` 的 BeanDefinition。
 `BasePackages` 通过 ArrayList 存储一组配置包路径。所以Spring Boot 启动后可以通过获取这个Bean实例获取自动配置包路径。
 
-packages路径注册后哪里使用？要用肯定还要将包路径取出来，但是在取出的方法上加了断点，启动一个空的Spring Boot Web项目并没有执行到断点，为什么？
+**疑问**：
 
-TODO: 那么@AutoConfigurationPackage导入的包路径什么时候会被用到？主类上也是间接加了这个注解又是怎么处理的？
++ packages路径注册后哪里使用？要用肯定还要将包路径取出来，但是在取出的方法上加了断点，启动一个空的Spring Boot Web项目并没有执行到断点，为什么？
+
++ @AutoConfigurationPackage导入的包路径什么时候会被用到？
+
++ 主类上也是间接加了这个注解又是怎么处理的？
+
+  看完完整流程后再回来回答下这个问题：
+
+  主类是通过spring.factories文件，导入外部模块配置类的，貌似确实没用到这个包路径。
 
 
 
 ### 1.2 AutoConfigurationImportSelector
 
-实现了`DeferredImportSelector`接口和一众Aware接口（拥有获取ResourceLoader、Bean容器、环境配置等资源的能力），经过之前的分析`DeferredImportSelector`具有排序、分组的额外处理（**同一分组只有排序最靠前的Bean会被加入`Map<Object, DeferredImportSelectorGrouping> groupings`，也即同一分组中排在第一的配置类才会被加载**，参考 spring-analysis 《Spring JavaConfig.md》）, `AutoConfigurationImportSelector` 定义了以`AutoConfigurationImportSelector.class`作为分组。
+实现了`DeferredImportSelector`接口和一众Aware接口（拥有获取ResourceLoader、Bean容器、环境配置等资源的能力），经过之前的分析`DeferredImportSelector`具有排序、分组的额外处理（**同一分组只有排序最靠前的Bean会被加入`Map<Object, DeferredImportSelectorGrouping> groupings`，也即同一分组中排在第一的配置类才会被加载**，参考 spring-analysis 《Spring JavaConfig.md》）, `AutoConfigurationImportSelector` 定义了以`AutoConfigurationGroup.class`作为分组。
 
 ```java
 // AutoConfigurationPackageDemoApplication 这个Demo的分组数据
@@ -81,7 +101,11 @@ public void process(AnnotationMetadata annotationMetadata, DeferredImportSelecto
     ...
     //获取所有自动配置元数据（Properties 1K多条，基本都是各个配置类的注解元数据）
     //加载所有候选配置类的全名（load factories from location [META-INF/spring.factories]）
-    //然后去重、过滤(去掉被exclude、不符合filter规则的) 这里去重、过滤后面再研究 TODO
+    //然后去重、过滤(去掉被exclude、不符合filter规则的)
+    //-> 去重：用LinkedHashSet自身去重的功能，把List先放到Set再把Set放到List就去重了;
+    //-> 过滤：1）去掉@EnableAutoConfiguration的两个属性exclude、excludeName指定的类,
+    //		  2）获取spring.factories中key为"org.springframework.boot.autoconfigure.AutoConfigurationImportFilter"的value数组集合,
+    //	        依次进行规则匹配（比如@OnBeanCondition, @OnClassCondition等）
         //classLoader.getResources("META-INF/spring.factories") 遍历所有引入的依赖jar的 META-INF/spring.factories
         //jar:file:/home/lee/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/2.1.6.RELEASE/spring-boot-autoconfigure-2.1.6.RELEASE.jar!/META-INF/spring.factories
         //jar:file:/home/lee/.m2/repository/org/springframework/spring-beans/5.1.8.RELEASE/spring-beans-5.1.8.RELEASE.jar!/META-INF/spring.factories
@@ -206,6 +230,8 @@ this.entries = {LinkedHashMap@4315}  size = 61
 
 **流程**
 
+这里还省略了IoC部分流程。只讨论了从`ConfigurationClassParser$parse`开始的处理流程。
+
 1）装载@Component等注解、ImportSelector、ImportSelector 指定的Bean定义，如果里面有嵌套继续1步骤;
 
 2）装载DeferredImportSelector指定的Bean定义
@@ -214,8 +240,105 @@ this.entries = {LinkedHashMap@4315}  size = 61
 
 ​      2.2）对排序后的DeferredImportSelector进行分组，每个分组只包含排在第一位的DeferredImportSelector；
 
-​      2.3）遍历分组，执行分组第一个DeferredImportSelector（先执行process(), 再执行selectImports() ，如果没有自定义DeferredImportSelector.Group，就是以当前DeferredImportSelectorHolder实例作为分组），以AutoConfigurationImportSelector处理为例，先是执行process()遍历所有依赖jar包的 META-INF/spring.factories 读取里面定义的配置类并进行去重过滤，然后执行selectImports() 进行进一步过滤和对配置类进行排序，包装成Group.Entry列表。
+​      2.3）遍历分组，执行分组第一个DeferredImportSelector（先执行process(), 再执行selectImports() ，如果没有自定义DeferredImportSelector.Group，就是以当前DeferredImportSelectorHolder实例作为分组），以AutoConfigurationImportSelector处理为例，先是执行process()遍历所有依赖jar包的 META-INF/spring.factories 读取里面定义的配置类（SpringBoot刚开始启动时就已经被读取了存在了缓存中，这里只是取下缓存）并进行去重过滤，然后执行selectImports() 对当前分组进行进一步过滤和对配置类进行排序，包装成Group.Entry列表。
 
 ​      2.4）最后执行processImports()，如果里面有嵌套引入其他配置，继续1步骤。
 
-TODO : 画个流程图。
+贴个别人画的[流程图](https://www.processon.com/view/link/5fc0abf67d9c082f447ce49b)。
+
+> 可以通过在application.properties中添加 debug=true 查看哪些配置类生效。
+>
+> 会生成一个条件评估报告："CONDITIONS EVALUATION REPORT"。
+
+
+
+### 1.3 常用自动配置类原理
+
+外部配置类通常和条件注解一起使用，条件注解充当过滤条件。
+
+下面是2.3.6.RELEASE版本源码。
+
+#### 1.3.1 AopAutoConfiguration
+
+```java
+@Configuration(proxyBeanMethods = false)
+//spring.aop.auto配置值为true时才加载，如果没有指定值也匹配成功
+@ConditionalOnProperty(prefix = "spring.aop", name = "auto", havingValue = "true", matchIfMissing = true)
+public class AopAutoConfiguration {
+
+    //有Advice.class才会加载
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(Advice.class)
+	static class AspectJAutoProxyingConfiguration {
+
+        //使用JDK动态代理配置
+		@Configuration(proxyBeanMethods = false)
+		@EnableAspectJAutoProxy(proxyTargetClass = false)	
+		@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "false",
+				matchIfMissing = false)
+		static class JdkDynamicAutoProxyConfiguration {
+		}
+
+        //使用CGLib动态代理配置
+		@Configuration(proxyBeanMethods = false)
+		@EnableAspectJAutoProxy(proxyTargetClass = true)	//为何这个注解主类上不用加，因为这里加了
+		@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true",
+				matchIfMissing = true)		//默认使用CGLib
+		static class CglibAutoProxyConfiguration {
+		}
+	}
+
+    //没有org.aspectj.weaver.Advice 且 spring.aop.proxy-target-class 不为false 才会加载
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnMissingClass("org.aspectj.weaver.Advice")
+	@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true",
+			matchIfMissing = true)
+	static class ClassProxyingConfiguration {
+		ClassProxyingConfiguration(BeanFactory beanFactory) {
+			if (beanFactory instanceof BeanDefinitionRegistry) {
+				BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
+				AopConfigUtils.registerAutoProxyCreatorIfNecessary(registry);
+				AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
+			}
+		}
+	}
+}
+```
+
+
+
+### 1.4 实现功能模块Starter
+
+很久之前写了个hello-spring-boot-starter。官方文档也有教程。
+
+规范一些的流程就是：
+
+1）建个模块工程，实现**业务功能**；
+
+2）建立autoconfigure模块工程，实现**默认的自动配置**（定义配置类，加入到spring.factories文件），比如根据配置决定哪些功能加载哪些不加载；
+
+3）建立starter模块工程，基本就是**编辑pom文件，处理依赖关系**，比如指定依赖哪些jar包，比如autoconfigure。
+
+
+
+
+
+## 2 自动配置应用
+
++ **比如引入Mybatis-starter, 默认会注入一个默认的SqlSessionFactory Bean, 但是我们想用自定义的替代默认的，怎么做？**
+
+  首先从前面的源码分析知道默认的Bean的定义是被` AutoConfigurationImportSelector`以`AutoConfigurationGroup`以这个分组加载的。有两种方法：
+
+  1）本身DeferredImportSelector就有最后加载的特性（通常被称为延迟特性），所以使用非DeferredImportSelector方式导入就可以；然后结合条件注解禁止排在后面的同名的Bean的加载；
+
+  2）如果自定义Bean也要用DeferredImportSelector（比如定制了多个实现，实现还有优先级），可以自定义一个分组或多个分组，自定义的Bean定义放到自定义分组，并让自定义分组序号或优先级高于`AutoConfigurationGroup`的序号或优先级；或者所有自定义Bean都放在一个自定义分组中，在分组内排序也可以；总之很灵活。然后结合条件注解禁止排在后面的同名的Bean的加载。
+
+  ```java
+  //AutoConfigurationGroup.class分组的排序基本是最后的了
+  @Override
+  public int getOrder() {
+      return Ordered.LOWEST_PRECEDENCE - 1;
+  }
+  ```
+
+  
