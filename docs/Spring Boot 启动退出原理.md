@@ -9,7 +9,7 @@
 
 spring_initializer-0.0.1-SNAPSHOT
 ├── BOOT-INF
-│   ├── classes
+│   ├── classes						# 应用程序类
 │   │   ├── application.properties
 │   │   ├── banner.jpg
 │   │   └── top
@@ -18,7 +18,7 @@ spring_initializer-0.0.1-SNAPSHOT
 │   │           │   └── HelloController.class
 │   │           └── SpringInitializerApplication.class
 │   ├── classpath.idx
-│   └── lib							# Spring Boot 依赖包
+│   └── lib							# Spring Boot 第三方依赖
 │       ├── jackson-annotations-2.11.3.jar
 │       ├── ...
 │       ├── snakeyaml-1.26.jar
@@ -112,4 +112,14 @@ Main-Class: org.springframework.boot.loader.JarLauncher
 ```
 
 spring-boot-maven-plugin打包原理
+
+spring-boot-maven-plugin默认有5个goals：repackage、run、start、stop、build-info。在打包的时候默认使用的repackage。spring-boot-maven-plugin的repackage能够将mvn package生成的软件包，再次打包为可执行的软件包（称为Fat Jar），并将mvn package生成的软件包重命名为*.original。
+
+大概可以理解为Spring Boot 重新封装了Jar包，因为某些定义不是Java标准定义，所以需要自行解析处理，JarLauncher就是自行解析的入口。
+
+大概流程（后面有时间再详细看这部分）：
+
+1）FatJar的启动Main函数是JarLauncher，以FatJar(如上面的spring_initializer-0.0.1-SNAPSHOT.jar)为file作为入参，构造JarFileArchive对象。JarFileArchive对象获取FatJar中的资源文件，获取其URL，构建URLClassLoader;
+
+2）使用URLClassLoader加载lib下的jar, 读取MANIFEST.MF文件中Start-Class指向的业务类，以一个新线程执行静态方法main，启动程序。
 
